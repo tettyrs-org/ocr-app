@@ -1,0 +1,4 @@
+# Rahasia dan dependensi lokal, jangan masuk repo
+.env
+.env.*
+node_modules/
