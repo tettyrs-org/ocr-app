@@ -21,10 +21,10 @@ void main() {
       }),
     ));
 
-    await _submit(tester, email: 'user@example.com', password: 'rahasia123');
+    await _submit(tester, email: 'user@example.com', password: 'example-password');
 
     expect(gotEmail, 'user@example.com');
-    expect(gotPassword, 'rahasia123');
+    expect(gotPassword, 'example-password');
   });
 
   testWidgets('menampilkan pesan gagal bila login error', (tester) async {
@@ -32,7 +32,7 @@ void main() {
       home: LoginPage(onLogin: (_, _) async => throw Exception('gagal')),
     ));
 
-    await _submit(tester, email: 'user@example.com', password: 'salah');
+    await _submit(tester, email: 'user@example.com', password: 'example-wrong-password');
 
     expect(find.text('Masuk gagal. Coba lagi beberapa saat.'), findsOneWidget);
   });
@@ -42,7 +42,7 @@ void main() {
       home: LoginPage(onLogin: (_, _) async => throw StateError('Akun belum memiliki akses. Hubungi admin.')),
     ));
 
-    await _submit(tester, email: 'user@example.com', password: 'rahasia123');
+    await _submit(tester, email: 'user@example.com', password: 'example-password');
 
     expect(find.text('Akun belum memiliki akses. Hubungi admin.'), findsOneWidget);
   });
@@ -54,7 +54,7 @@ void main() {
       ),
     ));
 
-    await _submit(tester, email: 'user@example.com', password: 'salah');
+    await _submit(tester, email: 'user@example.com', password: 'example-wrong-password');
 
     expect(find.text('Email atau kata sandi salah.'), findsOneWidget);
   });
@@ -66,7 +66,7 @@ void main() {
       ),
     ));
 
-    await _submit(tester, email: 'user@example.com', password: 'rahasia123');
+    await _submit(tester, email: 'user@example.com', password: 'example-password');
 
     expect(find.text('Akun dinonaktifkan. Hubungi admin.'), findsOneWidget);
   });
@@ -77,7 +77,7 @@ void main() {
       home: LoginPage(onLogin: (_, _) async => called++),
     ));
 
-    await _submit(tester, email: 'bukan-email', password: 'rahasia123');
+    await _submit(tester, email: 'bukan-email', password: 'example-password');
 
     expect(called, 0);
     expect(find.text('Masukkan email yang valid'), findsOneWidget);
