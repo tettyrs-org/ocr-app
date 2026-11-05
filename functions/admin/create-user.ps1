@@ -19,7 +19,7 @@ Daftar role dipisah koma: USER, ADMIN, atau VIEWER.
 Path kunci service account admin. Default: C:\Users\1214\.firebase-keys\ocr-admin.json
 
 .EXAMPLE
-powershell -ExecutionPolicy Bypass -File create-user.ps1 -Email user@kantor.id -Roles USER
+powershell -ExecutionPolicy Bypass -File create-user.ps1 -Email user@example.com -Roles USER
 #>
 param(
     [Parameter(Mandatory = $true)][string]$Email,
