@@ -10,9 +10,12 @@ const WINDOW_MS = 10 * 60 * 1000;
 const LIMIT = 30;
 const hits = new Map();
 
-// Google Load Balancer menambahkan IP klien di AKHIR X-Forwarded-For. Bagian awal bisa diisi klien sendiri,
-// jadi yang dipakai adalah nilai terakhir.
+// Cloudflare (Pages dan tunnel) menetapkan CF-Connecting-IP dengan IP klien asli. Header ini tidak dikirim ulang
+// dari klien lewat edge Cloudflare, jadi dipakai lebih dulu. Bila tidak ada, X-Forwarded-For dibaca dari nilai
+// TERAKHIR (ditambahkan proxy); bagian awal bisa diisi klien sendiri. Tanpa keduanya, semua dianggap satu klien.
 function alamatPemanggil(request) {
+  const cf = (request.headers.get('cf-connecting-ip') || '').trim();
+  if (cf) return cf;
   const xff = request.headers.get('x-forwarded-for') || '';
   const bagian = xff.split(',').map((x) => x.trim()).filter(Boolean);
   return bagian.length ? bagian[bagian.length - 1] : 'unknown';
