@@ -47,7 +47,6 @@ The current target is Cloudflare Pages project `ocr-platform-app`. `build/web` m
 - [ocr-api](https://github.com/tettyrs-org/ocr-api) - Public API and document lifecycle (verifies Firebase ID tokens)
 - [ms-ocr](https://github.com/tettyrs-org/ms-ocr) - Java extraction and correction service
 - [ocr-engine](https://github.com/tettyrs-org/ocr-engine) - Python OCR service (Tesseract, optional vision companion)
-- [ocr-documents](https://github.com/tettyrs-org/ocr-documents) - Architecture, API specification, and deployment docs (private)
 
 ## Known limitations
 
