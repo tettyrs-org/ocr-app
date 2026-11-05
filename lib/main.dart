@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -5,7 +6,6 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
 
 import 'auth/app_session.dart';
-import 'auth/auth_service.dart';
 import 'auth/bff_service.dart';
 import 'auth/demo_sign_in.dart';
 import 'auth/sign_in.dart';
@@ -23,18 +23,25 @@ Future<void> main() async {
   if (kIsWeb) {
     // URL tanpa '#': reload di halaman mana pun kembali ke halaman itu (lihat router/app_router.dart).
     usePathUrlStrategy();
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.web);
   }
+  // Web dan mobile memakai identitas Firebase yang sama (documents/tech/auth-firebase.md).
+  await Firebase.initializeApp(
+    options: kIsWeb ? DefaultFirebaseOptions.web : DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const OcrApp());
 }
 
 Future<SignInController> _defaultSignIn() async {
-  if (kIsWeb) {
-    return DemoAwareSignIn(FirebaseSignIn(BffService(baseUrl: _bffBaseUrl)));
-  }
-  final auth = await AuthService.create(baseUri: Uri.base);
-  return DemoAwareSignIn(OidcSignIn(auth));
+  // Di web, sesi BFF memakai cookie. Di mobile, setiap permintaan membawa ID token Firebase terbaru.
+  final bff = BffService(
+    baseUrl: _bffBaseUrl,
+    idTokenProvider: kIsWeb ? null : _idTokenTerbaru,
+  );
+  return DemoAwareSignIn(FirebaseSignIn(bff));
 }
+
+/// ID token Firebase berlaku 1 jam. `getIdToken()` memperbaruinya bila sudah kedaluwarsa.
+Future<String?> _idTokenTerbaru() async => FirebaseAuth.instance.currentUser?.getIdToken();
 
 class OcrApp extends StatefulWidget {
   const OcrApp({super.key, this.signInFactory});

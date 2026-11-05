@@ -3,29 +3,12 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-import 'auth_service.dart';
 import 'bff_service.dart';
 
 abstract interface class SignInController {
   Future<bool> restore();
   Future<void> login(String email, String password);
   Future<void> logout();
-}
-
-class OidcSignIn implements SignInController {
-  OidcSignIn(this._auth);
-
-  final AuthService _auth;
-
-  @override
-  Future<bool> restore() async => _auth.currentUser != null;
-
-  // Alur native masih memakai OIDC browser; email dan password tidak dipakai.
-  @override
-  Future<void> login(String email, String password) => _auth.login();
-
-  @override
-  Future<void> logout() => _auth.logout();
 }
 
 /// Login web: email dan password lewat Firebase Authentication, lalu ID token ditukar

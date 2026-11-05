@@ -13,8 +13,8 @@ class BffUser {
 }
 
 class BffService {
-  BffService({required this.baseUrl, http.Client? client})
-      : _client = client ?? createBffClient();
+  BffService({required this.baseUrl, http.Client? client, Future<String?> Function()? idTokenProvider})
+      : _client = client ?? createBffClient(idTokenProvider: idTokenProvider);
 
   final String baseUrl;
   final http.Client _client;
