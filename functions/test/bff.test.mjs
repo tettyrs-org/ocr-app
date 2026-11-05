@@ -11,9 +11,9 @@ const KEY = randomToken(32);
 const env = {
   API_BASE: 'https://api.test',
   COOKIE_KEY: KEY,
-  APP_ORIGIN: 'https://YOUR-APP-HOST.web.app',
-  APP_ORIGIN_ALT: 'https://YOUR-APP-HOST-ALT.web.app',
-  FIREBASE_PROJECT_ID: 'YOUR_FIREBASE_PROJECT_ID',
+  APP_ORIGIN: 'https://ocr-wjv-b56b7.web.app',
+  APP_ORIGIN_ALT: 'https://ocr-wjv.web.app',
+  FIREBASE_PROJECT_ID: 'ocr-wjv-b56b7',
 };
 
 let calls;

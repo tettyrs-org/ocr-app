@@ -63,14 +63,21 @@ class AppEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Ikon dalam lingkaran lembut, dengan lapisan luar tipis agar tampak seperti ilustrasi.
             Container(
-              width: 64,
-              height: 64,
+              width: 96,
+              height: 96,
               decoration: BoxDecoration(
-                color: AppColors.surfaceMuted,
-                borderRadius: BorderRadius.circular(AppRadius.card),
+                color: AppColors.indigoSurface.withValues(alpha: 0.5),
+                shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 30, color: iconColor),
+              alignment: Alignment.center,
+              child: Container(
+                width: 64,
+                height: 64,
+                decoration: const BoxDecoration(color: AppColors.surface, shape: BoxShape.circle),
+                child: Icon(icon, size: 30, color: iconColor),
+              ),
             ),
             const SizedBox(height: AppSpace.lg),
             Text(title, textAlign: TextAlign.center, style: theme.textTheme.titleMedium),

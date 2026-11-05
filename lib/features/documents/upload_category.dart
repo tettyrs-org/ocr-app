@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 
 /// Kategori unggahan (S4a). Menentukan `category` yang dikirim ke server dan `doc_type_hint` bila pasti.
 enum UploadCategory {
+  auto(
+    apiValue: 'auto',
+    title: 'Unggah dokumen',
+    description: 'Jenis dokumen dikenali otomatis dari isinya: KTP, nota BBM, surat tugas, SPD, atau struk',
+    icon: Icons.upload_file_outlined,
+    docTypeHint: null,
+  ),
   identity(
     apiValue: 'identity',
     title: 'Identitas diri',

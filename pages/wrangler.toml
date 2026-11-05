@@ -1,0 +1,5 @@
+# Konfigurasi Cloudflare Pages untuk app (Flutter web + BFF di _worker.js).
+name = "ocr-platform-app"
+compatibility_date = "2025-01-15"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "../build/web"

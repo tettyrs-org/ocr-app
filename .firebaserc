@@ -1,0 +1,25 @@
+{
+  "projects": {
+    "default": "ocr-wjv-b56b7"
+  },
+  "targets": {
+    "ocr-wjv-b56b7": {
+      "hosting": {
+        "app": [
+          "ocr-wjv-b56b7"
+        ],
+        "admin": [
+          "admin-ocr-wjv"
+        ]
+      }
+    },
+    "ocr-ecosytem": {
+      "hosting": {
+        "legacy": [
+          "ocr-ecosytem"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

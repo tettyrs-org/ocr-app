@@ -47,28 +47,28 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'YOUR_API_KEY',
-    appId: 'YOUR_APP_ID',
-    messagingSenderId: 'YOUR_SENDER_ID',
-    projectId: 'YOUR_FIREBASE_PROJECT_ID',
-    authDomain: 'YOUR_FIREBASE_PROJECT_ID.firebaseapp.com',
-    storageBucket: 'YOUR_FIREBASE_PROJECT_ID.firebasestorage.app',
+    apiKey: 'AIzaSyBiWwf3DbPxLEbc2KiaLsHb5aPSPyC4P78',
+    appId: '1:966502044112:web:65d8de77e29b658b8e29d5',
+    messagingSenderId: '966502044112',
+    projectId: 'ocr-wjv-b56b7',
+    authDomain: 'ocr-wjv-b56b7.firebaseapp.com',
+    storageBucket: 'ocr-wjv-b56b7.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_API_KEY',
-    appId: 'YOUR_APP_ID',
-    messagingSenderId: 'YOUR_SENDER_ID',
-    projectId: 'YOUR_FIREBASE_PROJECT_ID',
-    storageBucket: 'YOUR_FIREBASE_PROJECT_ID.firebasestorage.app',
+    apiKey: 'AIzaSyDrteD-iPAxD88NXyD_uOog_YLJTIO4oj4',
+    appId: '1:966502044112:android:3fcc218715aa73108e29d5',
+    messagingSenderId: '966502044112',
+    projectId: 'ocr-wjv-b56b7',
+    storageBucket: 'ocr-wjv-b56b7.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR_API_KEY',
-    appId: 'YOUR_APP_ID',
-    messagingSenderId: 'YOUR_SENDER_ID',
-    projectId: 'YOUR_FIREBASE_PROJECT_ID',
-    storageBucket: 'YOUR_FIREBASE_PROJECT_ID.firebasestorage.app',
+    apiKey: 'AIzaSyBGyD0bS4jH5oPE_zfK3WXBIsXjhSw3Z5M',
+    appId: '1:966502044112:ios:d908b5788a0766038e29d5',
+    messagingSenderId: '966502044112',
+    projectId: 'ocr-wjv-b56b7',
+    storageBucket: 'ocr-wjv-b56b7.firebasestorage.app',
     iosBundleId: 'com.tettyrs.ocrApp',
   );
 }

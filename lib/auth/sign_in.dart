@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'auth_service.dart';
 import 'bff_service.dart';
@@ -51,6 +52,8 @@ class FirebaseSignIn implements SignInController {
 
   @override
   Future<void> login(String email, String password) async {
+    // Refresh token hanya hidup selama tab terbuka (SESSION), tidak disimpan di IndexedDB setelah browser ditutup.
+    if (kIsWeb) await _auth.setPersistence(Persistence.SESSION);
     await _auth.signInWithEmailAndPassword(email: email, password: password);
     final ok = await _exchange();
     if (!ok) {

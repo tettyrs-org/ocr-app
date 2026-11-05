@@ -5,15 +5,15 @@ void main() {
   test('redirect web berada di origin aplikasi, bukan skema khusus', () {
     final uri = AuthConfig.redirectUri(
       isWeb: true,
-      baseUri: Uri.parse('https://your-app-host.web.app/'),
+      baseUri: Uri.parse('https://ocr-wjv-b56b7.web.app/'),
     );
-    expect(uri, 'https://your-app-host.web.app/redirect.html');
+    expect(uri, 'https://ocr-wjv-b56b7.web.app/redirect.html');
   });
 
   test('redirect mobile memakai skema khusus yang terdaftar di Keycloak', () {
     final uri = AuthConfig.redirectUri(
       isWeb: false,
-      baseUri: Uri.parse('https://your-app-host.web.app/'),
+      baseUri: Uri.parse('https://ocr-wjv-b56b7.web.app/'),
     );
     expect(uri, 'com.tettyrs.ocr:/callback');
   });

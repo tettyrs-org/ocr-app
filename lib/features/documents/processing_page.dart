@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../auth/demo_mode.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_widgets.dart';
 import 'document_status.dart';
-import 'document_status_chip.dart';
 import 'documents_api.dart';
 
 /// S8: status pemrosesan. Polling mengikuti `poll_after_ms` dan berhenti saat status bukan `processing`.
@@ -72,7 +72,8 @@ class _ProcessingPageState extends State<ProcessingPage> {
       // Hasil ekstraksi sudah siap untuk ditinjau: langsung ke halaman tinjau, tidak perlu kembali ke daftar dulu.
       if (_status == DocumentStatus.extracted) {
         _timer?.cancel();
-        context.pushReplacement('/dokumen/${widget.documentId}/tinjau');
+        // Demo: hasil langsung ditampilkan (tidak ada yang disimpan, jadi tidak perlu tinjau).
+        context.pushReplacement(DemoMode.active ? '/dokumen/${widget.documentId}' : '/dokumen/${widget.documentId}/tinjau');
       }
     } on DocumentsApiException catch (e) {
       if (!mounted) return;
@@ -156,8 +157,6 @@ class _ProcessingPageState extends State<ProcessingPage> {
                       const SizedBox(height: AppSpace.lg),
                       Text(_resultText(_status), textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium),
                     ],
-                    const SizedBox(height: AppSpace.md),
-                    DocumentStatusChip(status: _status),
                   ],
                 ),
               ),

@@ -1,6 +1,7 @@
 // BFF untuk aplikasi OCR (web dan mobile). Kontrak: documents/tech/web-bff.md dan auth-firebase.md.
 import { SESSION_COOKIE, clearCookie } from './cookies.js';
 import { handleInvitationCheck, handleInvitationRedeem } from './invitation.js';
+import { handleDemoExtract } from './demo.js';
 import {
   now,
   verifyIdToken,
@@ -59,7 +60,9 @@ async function handleSession(request, env) {
     return errorResponse('FORBIDDEN', 'Akun belum memiliki role', 403, corsHeaders(request, env));
   }
 
-  const session = newSession({ idToken: match[1], payload, roles });
+  const previous = await sessionFrom(request, env.COOKIE_KEY);
+  const iat = previous && previous.sub === payload.sub ? previous.iat : undefined;
+  const session = newSession({ idToken: match[1], payload, roles, iat });
   const headers = { ...corsHeaders(request, env), 'Set-Cookie': await sessionCookie(session, env.COOKIE_KEY) };
   return json({ sub: session.sub, roles: session.roles, csrfToken: session.csrf }, 200, headers);
 }
@@ -109,13 +112,32 @@ async function handleApi(request, env) {
     if (v) headers.set(h, v);
   }
   const hasBody = request.method !== 'GET' && request.method !== 'HEAD';
-  const upstream = await fetch(target, {
+  const init = {
     method: request.method,
     headers,
     body: hasBody ? request.body : undefined,
     // Node membutuhkan duplex untuk body berupa stream (unggahan multipart).
     ...(hasBody ? { duplex: 'half' } : {}),
-  });
+  };
+  // Tunnel sesekali putus sesaat. Permintaan baca (GET/HEAD) aman diulang sekali. Permintaan yang mengubah data tidak.
+  const aman = !hasBody;
+  let upstream;
+  try {
+    upstream = await fetch(target, init);
+  } catch (err) {
+    if (!aman) throw err;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    upstream = await fetch(target, init);
+  }
+
+  // Galat 5xx dari API (atau halaman error tunnel) tidak diteruskan apa adanya: bisa memuat detail internal.
+  if (upstream.status >= 500) {
+    console.error('upstream gagal:', upstream.status);
+    await upstream.arrayBuffer().catch(() => {});
+    const extra = { ...corsHeaders(request, env), 'Cache-Control': 'no-store' };
+    if (viaCookie) extra['Set-Cookie'] = await sessionCookie({ ...session, last: now() }, env.COOKIE_KEY);
+    return json({ error: { code: 'UPSTREAM_ERROR', message: 'Layanan sedang bermasalah. Coba lagi nanti.', details: null } }, upstream.status, extra);
+  }
 
   const out = new Headers(upstream.headers);
   out.delete('Set-Cookie');
@@ -150,6 +172,8 @@ export default {
     }
 
     try {
+      // Mode demo: publik, tanpa sesi dan tanpa database (lihat demo.js).
+      if (url.pathname === '/bff/demo/extract' && request.method === 'POST') return handleDemoExtract(request, env);
       if (url.pathname === '/bff/session' && request.method === 'POST') return handleSession(request, env);
       if (url.pathname === '/bff/me' && request.method === 'GET') return handleMe(request, env);
       if (url.pathname === '/bff/logout' && request.method === 'POST') return handleLogout(request, env);

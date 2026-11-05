@@ -25,7 +25,7 @@ void main() {
   group('flattenReviewFields', () {
     test('label KTP mengikuti kunci yang dikirim ms-ocr, bukan nama kunci mentah', () {
       final rows = flattenReviewFields({
-        'nik': {'value': '3271014567890123', 'confidence': 0.5, 'source': 'rule', 'correction': 'derived'},
+        'nik': {'value': '3171234567890123', 'confidence': 0.5, 'source': 'rule', 'correction': 'derived'},
         'rt_rw': {'value': '007/008', 'confidence': 0.8, 'source': 'rule'},
         'kelurahan_desa': {'value': 'PEGADUNGAN', 'confidence': 0.8, 'source': 'rule'},
         'berlaku_hingga': {'value': '22-02-2017', 'confidence': 0.8, 'source': 'rule'},

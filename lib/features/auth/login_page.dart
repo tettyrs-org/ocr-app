@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../auth/demo_mode.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_widgets.dart';
 
@@ -38,6 +39,24 @@ class _LoginPageState extends State<LoginPage> {
       await widget.onLogin(_email.text.trim(), _password.text);
     } catch (e) {
       debugPrint('Login gagal: $e');
+      if (mounted) {
+        setState(() => _error = _messageFor(e));
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// Mode demo: tidak memakai email atau kata sandi, dan tidak menghubungi server.
+  Future<void> _loginDemo() async {
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await widget.onLogin(kDemoEmail, '');
+    } catch (e) {
+      debugPrint('Mode demo gagal: $e');
       if (mounted) {
         setState(() => _error = _messageFor(e));
       }
@@ -124,6 +143,15 @@ class _LoginPageState extends State<LoginPage> {
                       child: FilledButton(
                         onPressed: _busy ? null : _login,
                         child: Text(_busy ? 'Memproses...' : 'Masuk'),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: OutlinedButton(
+                        onPressed: _busy ? null : _loginDemo,
+                        child: const Text('Coba mode demo'),
                       ),
                     ),
                     const SizedBox(height: 16),

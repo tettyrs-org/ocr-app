@@ -1,90 +1,62 @@
-# OCR Documents — app (Flutter)
+# OCR app
 
-Web and mobile app for uploading travel-expense documents and identity cards (KTP), following the
-OCR progress, and reviewing and saving the extracted data. Built with Flutter. The server side is a
-Cloud Functions backend-for-frontend (BFF) in front of a Quarkus API.
+Flutter web app for uploading and reviewing travel and reimbursement documents (ID cards, fuel receipts, surat tugas, SPD). It talks to the backend only through a Backend-for-Frontend (BFF) that lives in `pages/` (Cloudflare Pages) and `functions/` (shared handler code).
 
-## Features
+## Layout
 
-- **Document list** with status, type, and upload time (WIB, UTC+7).
-- **Upload** from a file or the camera (web), in three categories: identity card (KTP), travel
-  expense documents (fuel receipt, assignment letter, travel order, receipt), and other. Photos are
-  checked for quality before upload, and the app shows tips when a photo is blurry or too dark.
-- **Processing status** with polling. The page moves to the review screen as soon as the result is
-  ready.
-- **Review and correction.** Each field shows the OCR value, its original text, and a marker when
-  confidence is low or when a value was filled in by the vision companion. Saved documents cannot
-  be changed.
-- **Accounts and sessions.** Sign-in uses Firebase Authentication. The session is kept in an
-  HttpOnly cookie set by the BFF, so no token is stored in the browser.
+| Path | What it is |
+|---|---|
+| `lib/` | Flutter app: features (documents, account, profile), auth, layouts, theme |
+| `pages/` | Cloudflare Pages entry (`_worker.js`) and `wrangler.toml`. Routes `/bff/*` to the BFF, everything else to static assets |
+| `functions/` | BFF handler code (`src/`), shared by the Pages worker and the legacy Firebase Functions target |
+| `web/` | Web shell (`index.html`, `demo_flag.js`, service-worker cleanup) |
+| `test/` | Flutter tests |
+| `build-web.ps1` | Release build with the values from `.env` as `--dart-define` |
+| `firebase.json` | Legacy Firebase Hosting targets (`app`, `admin`) |
 
-## Structure
+## Requirements
 
-```
-lib/
-  auth/            session, BFF client, storage (web and native)
-  features/        documents, auth, account, profile, invitation, reset
-  layouts/         navigation shell
-  router/          go_router
-  theme/, widgets/ shared UI
-functions/         Cloud Functions: BFF (/bff/**) and admin endpoints
-test/              Flutter widget and unit tests
-web/               web entry point
-```
+- Flutter SDK with Dart `^3.10.7` (see `pubspec.yaml`)
+- PowerShell for `build-web.ps1`
+- Node 22 and wrangler, only when deploying to Cloudflare Pages
 
-Firebase Hosting has two targets: `app` (this app) and `admin` (a separately deployed web app).
+## Configuration
 
-## Getting started
+`app/.env` holds build-time values. The only key today is `BFF_BASE_URL`, the base URL the app calls for `/bff/*`. Do not commit real values.
 
-Requirements: stable Flutter, the Firebase CLI, and Node.js for the Cloud Functions.
-
-1. **Firebase configuration.** Run `flutterfire configure` to generate your own
-   `lib/firebase_options.dart` and platform files. The files in this repository contain placeholders.
-2. **Local configuration.** Copy `.env.example` to `.env` and set `BFF_BASE_URL`. Copy
-   `functions/.env.example` to `functions/.env` and fill in the values. Do not commit `.env` files.
-3. **Run locally:**
-
-   ```bash
-   flutter pub get
-   flutter run -d chrome --dart-define=BFF_BASE_URL=<bff-url>
-   ```
-
-4. **Build the web app for hosting:**
-
-   ```bash
-   flutter build web --release --pwa-strategy=none --dart-define=BFF_BASE_URL=<bff-url>
-   firebase deploy --only hosting:app
-   ```
-
-   `build-web.ps1` (Windows) reads `.env` and passes its values as `--dart-define` arguments.
-
-## Cloud Functions (BFF)
+## Run and build
 
 ```bash
-cd functions
-npm install
-npm test          # node --test
-firebase deploy --only functions
-```
-
-The BFF forwards `/bff/**` requests to the API at `API_BASE`, verifies Firebase ID tokens, and
-manages the session cookie. Secrets (cookie key, mail API key) are stored in Secret Manager, not in
-files.
-
-## Tests
-
-```bash
+flutter pub get
+flutter run -d chrome          # development; BFF_BASE_URL must point to a running BFF
 flutter test
 ```
 
-Tests use fictional data and do not need any production service.
+```powershell
+powershell -ExecutionPolicy Bypass -File app\build-web.ps1   # release build into build/web
+```
 
-## Security
+The release build disables the service worker (`--pwa-strategy=none`), so the app has no offline mode.
 
-- Do not commit `.env`, `functions/.env`, `google-services.json`, `GoogleService-Info.plist`, or a
-  `.firebaserc` with real values.
-- Personal data is not stored in the app. KTP data is shown only to its owner, after the API decrypts it.
+## Deploy
 
-## License
+The current target is Cloudflare Pages project `ocr-platform-app`. `build/web` must also contain the bundled `_worker.js`, otherwise `/bff/*` is not served. See `deploy/pages/README.md` for the startup script that connects Pages to the backend through quick tunnels, and `deploy/README.md` for the environments.
 
-Not yet determined.
+## Related projects
+
+- [ocr-api](https://github.com/tettyrs-org/ocr-api) - Public API and document lifecycle (verifies Firebase ID tokens)
+- [ms-ocr](https://github.com/tettyrs-org/ms-ocr) - Java extraction and correction service
+- [ocr-engine](https://github.com/tettyrs-org/ocr-engine) - Python OCR service (Tesseract, optional vision companion)
+- [ocr-documents](https://github.com/tettyrs-org/ocr-documents) - Architecture, API specification, and deployment docs (private)
+
+## Known limitations
+
+Listed openly so they are not mistaken for solved problems:
+
+- **Demo mode keeps results only in memory.** Nothing is saved to a database. The demo flag is kept in `sessionStorage`, so a reload stays in demo mode but closing the tab ends it.
+- **Demo limits.** Uploads are capped at 10 MB, and each IP can send 30 demo requests per 10 minutes. Replace, delete, verify, and template actions are blocked in demo mode.
+- **Firebase Hosting and Cloud Functions cannot be deployed right now.** Blaze billing is disabled for project `ocr-wjv-b56b7`, so the Pages path is used instead.
+- **Admin operations need a service account key.** The organization policy `iam.disableServiceAccountKeyCreation` blocks creating that key, so admin operations are not available until an administrator changes the policy.
+- **Backend addresses change.** Quick tunnels get a new URL each time they start. `deploy/pages/start-backend-tunnels.ps1` updates the Pages secrets and redeploys.
+- **Content Security Policy is strict.** `firebase.json` and `web/_headers` allow only specific script, connect, and font sources. A new external CDN or API domain needs a CSP change first, or the browser blocks it.
+- **Identity extraction is slow on CPU.** A KTP can take 15 to 40 seconds because vision runs on the engine's CPU. The review screen shows progress while it runs.

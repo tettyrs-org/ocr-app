@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../auth/demo_mode.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_widgets.dart';
 import 'document_labels.dart';
@@ -154,7 +155,8 @@ class _DocumentDetailPageState extends State<DocumentDetailPage> {
           ),
         ],
         // KTP juga ditinjau pemiliknya: field dari OCR bisa salah baca dan harus bisa dikoreksi.
-        ...[
+        // Demo: hasil langsung tampil di halaman ini dan tidak disimpan, jadi tombol tinjau tidak ditampilkan.
+        if (!DemoMode.active) ...[
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
@@ -164,6 +166,8 @@ class _DocumentDetailPageState extends State<DocumentDetailPage> {
               child: Text(detail.verification == null ? 'Tinjau dan koreksi' : 'Sudah ditinjau'),
             ),
           ),
+        ],
+        ...[
           if (_canManual(detail)) ...[
             const SizedBox(height: 8),
             SizedBox(
@@ -222,6 +226,7 @@ class _DocumentDetailPageState extends State<DocumentDetailPage> {
 
   String _reviewHint(DocumentDetail d) {
     if (d.verification != null) return 'Dokumen sudah ditinjau dan tidak dapat diubah lagi.';
+    if (DemoMode.active) return 'Hasil demo. Tidak disimpan.';
     if (_canReview(d)) return 'Periksa setiap field. Field yang ditandai perlu dicek lebih dulu.';
     return 'Tinjau dan koreksi tersedia setelah field hasil ekstraksi dibuat.';
   }

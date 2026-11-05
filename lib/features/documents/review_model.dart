@@ -161,8 +161,8 @@ Map<String, dynamic> buildVerificationFields(
       final orig = node['value'];
       final rawSource = node['source']?.toString();
       final text = edited[path];
-      final changed = text != null && text != _asText(orig);
-      final value = changed ? _parseEdited(text, orig) : orig;
+      final changed = text != null && text != reviewInitialText(orig, path: path);
+      final value = changed ? _parseEdited(text, orig, path: path) : orig;
       final source = changed ? 'manual' : (_sources.contains(rawSource) ? rawSource! : 'rule');
       return {'value': value, 'source': source};
     }
@@ -183,11 +183,15 @@ Map<String, dynamic> buildVerificationFields(
   return Map<String, dynamic>.from(rebuild(original, '') as Map);
 }
 
-String? _asText(Object? v) => v?.toString();
-
-Object? _parseEdited(String text, Object? original) {
+Object? _parseEdited(String text, Object? original, {String? path}) {
   final trimmed = text.trim();
   if (trimmed.isEmpty) return null;
+  if (original is num && path != null && isNominalPath(path)) {
+    // Titik dan spasi pemisah ribuan dibuang, lalu hasilnya diuraikan sebagai angka utuh.
+    final digits = trimmed.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) return null;
+    return int.parse(digits);
+  }
   if (original is num) {
     final asInt = int.tryParse(trimmed);
     if (asInt != null) return asInt;
@@ -197,8 +201,26 @@ Object? _parseEdited(String text, Object? original) {
   return trimmed;
 }
 
-/// Teks awal untuk kolom edit. Null tampil sebagai kosong.
-String reviewInitialText(Object? value) => value?.toString() ?? '';
+/// Teks awal untuk kolom edit. Null tampil sebagai kosong. Nominal tampil dengan titik ribuan ("20.000"),
+/// sedangkan nilai di server tetap angka.
+String reviewInitialText(Object? value, {String? path}) {
+  if (value is num && path != null && isNominalPath(path)) return formatNominal(value);
+  return value?.toString() ?? '';
+}
+
+/// Field nominal uang (mis. "nominal_total"). Hanya field ini yang memakai titik sebagai pemisah ribuan.
+bool isNominalPath(String path) => path == 'nominal_total' || path.endsWith('.nominal_total');
+
+/// 20000 menjadi "20.000". Angka pecahan dibulatkan ke rupiah utuh.
+String formatNominal(num value) {
+  final digits = value.round().abs().toString();
+  final buf = StringBuffer(value < 0 ? '-' : '');
+  for (var i = 0; i < digits.length; i++) {
+    if (i > 0 && (digits.length - i) % 3 == 0) buf.write('.');
+    buf.write(digits[i]);
+  }
+  return buf.toString();
+}
 
 /// Konteks ringkas untuk pengguna: jenis dokumen dan jumlah baris yang perlu diperiksa.
 int countNeedingReview(List<ReviewField> rows) => rows.where((r) => r.needsReview).length;

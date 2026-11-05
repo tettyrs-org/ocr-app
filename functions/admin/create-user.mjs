@@ -2,8 +2,8 @@
 // Kontrak: documents/tech/auth-firebase.md bagian 8.
 //
 // Pemakaian (dari folder app/functions):
-//   node admin/create-user.mjs --email user@example.com --roles USER
-//   node admin/create-user.mjs --email admin@example.com --roles USER,ADMIN
+//   node admin/create-user.mjs --email user@kantor.id --roles USER
+//   node admin/create-user.mjs --email admin@kantor.id --roles USER,ADMIN
 //
 // Prasyarat:
 //   - GOOGLE_APPLICATION_CREDENTIALS: path ke kunci service account admin (JANGAN disimpan di repo)

@@ -56,12 +56,12 @@ void main() {
       'doc_type': 'RECEIPT',
       'fields': {
         'nominal_total': {'value': 600000, 'source': 'rule', 'confidence': 0.95, 'raw_text': null},
-        'nomor_referensi': {'value': '1234567', 'source': 'rule', 'confidence': 0.95, 'raw_text': null},
+        'nomor_referensi': {'value': '5281689', 'source': 'rule', 'confidence': 0.95, 'raw_text': null},
       },
     }));
 
     expect(find.text('600000'), findsOneWidget);
-    expect(find.text('1234567'), findsOneWidget);
+    expect(find.text('5281689'), findsOneWidget);
     expect(find.text('Field sudah diekstraksi.'), findsNothing);
   });
 

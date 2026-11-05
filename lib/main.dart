@@ -7,8 +7,9 @@ import 'package:go_router/go_router.dart';
 import 'auth/app_session.dart';
 import 'auth/auth_service.dart';
 import 'auth/bff_service.dart';
+import 'auth/demo_sign_in.dart';
 import 'auth/sign_in.dart';
-import 'features/documents/documents_api.dart';
+import 'features/documents/demo_documents_api.dart';
 import 'features/profile/profile_api.dart';
 import 'firebase_options.dart';
 import 'router/app_router.dart';
@@ -29,10 +30,10 @@ Future<void> main() async {
 
 Future<SignInController> _defaultSignIn() async {
   if (kIsWeb) {
-    return FirebaseSignIn(BffService(baseUrl: _bffBaseUrl));
+    return DemoAwareSignIn(FirebaseSignIn(BffService(baseUrl: _bffBaseUrl)));
   }
   final auth = await AuthService.create(baseUri: Uri.base);
-  return OidcSignIn(auth);
+  return DemoAwareSignIn(OidcSignIn(auth));
 }
 
 class OcrApp extends StatefulWidget {
@@ -56,12 +57,17 @@ class _OcrAppState extends State<OcrApp> {
 
   Future<void> _start() async {
     final signIn = await (widget.signInFactory ?? _defaultSignIn)();
-    final bff = signIn is FirebaseSignIn ? signIn.service : BffService(baseUrl: _bffBaseUrl);
-    final profileApi = signIn is FirebaseSignIn ? ProfileApi(bff) : null;
-    final session = AppSession(signIn: signIn, profileApi: profileApi);
+    final inner = signIn is DemoAwareSignIn ? signIn.inner : signIn;
+    final bff = inner is FirebaseSignIn ? inner.service : BffService(baseUrl: _bffBaseUrl);
+    final profileApi = inner is FirebaseSignIn ? ProfileApi(bff) : null;
+    final session = AppSession(
+      signIn: signIn,
+      profileApi: profileApi,
+      loadRoles: profileApi == null ? null : () async => (await bff.currentUser())?.roles ?? const <String>[],
+    );
     final router = buildAppRouter(
       session: session,
-      documents: DocumentsApi(bff),
+      documents: DemoAwareDocumentsApi(bff),
       profiles: profileApi,
     );
     if (!mounted) return;

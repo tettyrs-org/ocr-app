@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../theme/app_theme.dart';
+
 class ShellLayout extends StatefulWidget {
   const ShellLayout({super.key, required this.pages});
 
@@ -46,13 +48,31 @@ class AppShell extends StatelessWidget {
     final index = location.startsWith('/akun') ? 1 : 0;
     return Scaffold(
       body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: index,
-        onDestinationSelected: (i) => _go(context, _tabs[i]),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.description_outlined), label: 'Dokumen'),
-          NavigationDestination(icon: Icon(Icons.person_outline), label: 'Akun'),
-        ],
+      // Navigasi melayang: pil dengan bayangan lembut, tidak menempel di tepi bawah layar.
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+              border: Border.all(color: AppColors.border),
+              boxShadow: AppShadows.card,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+              child: NavigationBar(
+                selectedIndex: index,
+                onDestinationSelected: (i) => _go(context, _tabs[i]),
+                destinations: const [
+                  NavigationDestination(icon: Icon(Icons.description_outlined), label: 'Dokumen'),
+                  NavigationDestination(icon: Icon(Icons.person_outline), label: 'Akun'),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

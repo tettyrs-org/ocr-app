@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
+import '../../auth/demo_mode.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_widgets.dart';
 import 'documents_api.dart';
@@ -39,31 +42,77 @@ class _UploadPreviewPageState extends State<UploadPreviewPage> {
   bool _busy = false;
   String? _error;
   List<String> _errorDetails = const [];
+  // Tahap ekstraksi demo yang sedang berjalan (teks, identitas, pendamping). Null di luar mode demo.
+  String? _tahap;
+  // Tahap demo yang sudah selesai, urut. Ditampilkan sebagai daftar centang di bawah tombol.
+  final List<String> _tahapLewat = [];
   // Kunci disimpan sampai respons diterima, termasuk saat percobaan ulang (design.md 3.1).
   final String _idempotencyKey = newIdempotencyKey();
+
+  static String _namaTahap(String tahap) => switch (tahap) {
+        'teks' => 'Membaca teks dokumen',
+        'identitas' => 'Mengenali isian',
+        'pendamping' => 'Menyusun data untuk ditinjau',
+        _ => tahap,
+      };
+
+  /// Kirim berkas. Galat jaringan dicoba ulang sekali. Kunci idempotensi sama, jadi tidak ada dokumen ganda.
+  Future<UploadResult> _kirimDenganUlang() async {
+    for (var coba = 1; ; coba++) {
+      try {
+        return await _kirimSekali();
+      } catch (e) {
+        if (coba >= 2 || !_galatJaringan(e)) rethrow;
+        debugPrint('Percobaan $coba gagal, mencoba lagi: ${e.runtimeType}');
+        await Future<void>.delayed(const Duration(seconds: 2));
+      }
+    }
+  }
+
+  Future<UploadResult> _kirimSekali() {
+    final target = widget.replacing;
+    if (target == null) {
+      return widget.api.upload(
+        bytes: widget.file.bytes,
+        filename: widget.file.filename,
+        idempotencyKey: _idempotencyKey,
+        category: widget.category.apiValue,
+        docTypeHint: widget.category.docTypeHint,
+        onTahap: (tahap) {
+          if (!mounted) return;
+          setState(() {
+            final sebelumnya = _tahap;
+            if (sebelumnya != null) _tahapLewat.add(sebelumnya);
+            _tahap = tahap;
+          });
+        },
+      );
+    }
+    return widget.api.replace(
+      target: target,
+      bytes: widget.file.bytes,
+      filename: widget.file.filename,
+      idempotencyKey: _idempotencyKey,
+    );
+  }
+
+  static bool _galatJaringan(Object e) =>
+      e is http.ClientException || e is TimeoutException || e is FormatException;
+
+  static String _pesanGagal(Object e) => _galatJaringan(e)
+      ? 'Tidak bisa terhubung ke server. Berkas belum dikirim. Tekan Coba lagi.'
+      : 'Unggahan gagal. Berkas belum dikirim. Tekan Coba lagi.';
 
   Future<void> _upload() async {
     setState(() {
       _busy = true;
       _error = null;
       _errorDetails = const [];
+      _tahap = null;
+      _tahapLewat.clear();
     });
     try {
-      final target = widget.replacing;
-      final result = target == null
-          ? await widget.api.upload(
-              bytes: widget.file.bytes,
-              filename: widget.file.filename,
-              idempotencyKey: _idempotencyKey,
-              category: widget.category.apiValue,
-              docTypeHint: widget.category.docTypeHint,
-            )
-          : await widget.api.replace(
-              target: target,
-              bytes: widget.file.bytes,
-              filename: widget.file.filename,
-              idempotencyKey: _idempotencyKey,
-            );
+      final result = await _kirimDenganUlang();
       if (!mounted) return;
       await Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(
@@ -82,12 +131,18 @@ class _UploadPreviewPageState extends State<UploadPreviewPage> {
           _errorDetails = e.details;
         });
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Unggahan gagal: ${e.runtimeType}: $e');
       if (mounted) {
-        setState(() => _error = 'Unggahan gagal karena jaringan. Berkas belum dikirim. Tekan Coba lagi.');
+        setState(() => _error = _pesanGagal(e));
       }
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _tahap = null;
+        });
+      }
     }
   }
 
@@ -135,14 +190,48 @@ class _UploadPreviewPageState extends State<UploadPreviewPage> {
                 style: theme.textTheme.bodySmall,
                 overflow: TextOverflow.ellipsis,
               ),
+              if (DemoMode.active) ...[
+                const SizedBox(height: 16),
+                Text(
+                  'Mode demo: berkas diproses sementara di server dan tidak disimpan. '
+                  'Gunakan contoh dokumen, bukan data pribadi asli.',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
               const SizedBox(height: 24),
               SizedBox(
                 height: 48,
                 child: FilledButton(
                   onPressed: _busy ? null : _upload,
-                  child: Text(_busy ? 'Mengunggah...' : (_error == null ? 'Unggah' : 'Coba lagi')),
+                  // Label tetap selama proses. Kemajuan ditampilkan di bawah tombol, bukan dengan mengganti label.
+                  child: Text(_busy ? 'Memproses...' : (_error == null ? 'Unggah' : 'Coba lagi')),
                 ),
               ),
+              if (_busy && DemoMode.active) ...[
+                const SizedBox(height: 16),
+                for (final tahap in _tahapLewat)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        Icon(Icons.check_circle, size: 18, color: theme.colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Text(_namaTahap(tahap), style: theme.textTheme.bodyMedium),
+                      ],
+                    ),
+                  ),
+                if (_tahap != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+                        const SizedBox(width: 8),
+                        Text(_namaTahap(_tahap!), style: theme.textTheme.bodyMedium),
+                      ],
+                    ),
+                  ),
+              ],
               if (_error != null) ...[
                 const SizedBox(height: 12),
                 AppBanner(message: _error!, details: _errorDetails),

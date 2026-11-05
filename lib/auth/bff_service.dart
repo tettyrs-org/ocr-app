@@ -76,6 +76,15 @@ class BffService {
   }
 
   /// Unggah berkas sebagai multipart. `Idempotency-Key` dipakai agar percobaan ulang tidak membuat dokumen ganda.
+  /// Mode demo: ekstraksi publik tanpa login dan tanpa database (lihat functions/src/demo.js).
+  /// Respons berupa aliran NDJSON: satu baris per tahap, lalu baris hasil atau galat. Dibaca baris demi baris.
+  Future<http.StreamedResponse> demoExtract(List<int> bytes, String category) {
+    final request = http.Request('POST', Uri.parse('$baseUrl/bff/demo/extract'))
+      ..headers.addAll({'Content-Type': 'application/octet-stream', 'X-Category': category})
+      ..bodyBytes = bytes;
+    return _client.send(request);
+  }
+
   Future<http.Response> apiUpload(
     String path, {
     required List<int> bytes,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../auth/demo_mode.dart';
 import '../../theme/app_theme.dart';
 import 'document_status.dart';
 
@@ -31,7 +32,7 @@ class DocumentStatusChip extends StatelessWidget {
   static (String, Color) _presentation(DocumentStatus status) {
     return switch (status) {
       DocumentStatus.processing => ('Sedang diproses', AppColors.slate),
-      DocumentStatus.extracted => ('Perlu ditinjau', AppColors.indigo),
+      DocumentStatus.extracted => (DemoMode.active ? 'Hasil demo' : 'Perlu ditinjau', AppColors.indigo),
       DocumentStatus.verified => ('Tersimpan', AppColors.teal),
       DocumentStatus.extractionFailed => ('Gagal', AppColors.error),
       DocumentStatus.unknown => ('Status tidak dikenal', AppColors.slate),

@@ -50,12 +50,13 @@ export async function sessionCookie(session, cookieKey) {
   return setCookie(SESSION_COOKIE, sealed, IDLE_SECONDS);
 }
 
-export function newSession({ idToken, payload, roles }) {
+// iat = waktu login awal. Pembaruan sesi oleh pengguna yang sama memakai iat lama, supaya batas mutlak tetap berlaku.
+export function newSession({ idToken, payload, roles, iat }) {
   const t = now();
   return {
     at: idToken,
     exp: payload.exp,
-    iat: t,
+    iat: iat ?? t,
     last: t,
     sub: payload.sub,
     roles,

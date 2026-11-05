@@ -9,9 +9,12 @@ import { handleAdmin } from './src/admin.js';
 
 // Nilai non-rahasia dibaca dari functions/.env saat deploy (lihat start-quick-tunnel.ps1)
 const APP_ORIGIN = defineString('APP_ORIGIN');
-const ADMIN_APP_ORIGIN = defineString('ADMIN_APP_ORIGIN', { default: 'https://YOUR-ADMIN-HOST.web.app' });
-const OCR_PROJECT_ID = defineString('OCR_PROJECT_ID', { default: 'YOUR_FIREBASE_PROJECT_ID' });
+const ADMIN_APP_ORIGIN = defineString('ADMIN_APP_ORIGIN', { default: 'https://admin-ocr-wjv.web.app' });
+const OCR_PROJECT_ID = defineString('OCR_PROJECT_ID', { default: 'ocr-wjv-b56b7' });
 const API_BASE = defineString('API_BASE');
+// Mode demo: ms-ocr (tanpa database) lewat tunnel terpisah. Token disimpan sebagai secret.
+const DEMO_OCR_BASE = defineString('DEMO_OCR_BASE', { default: '' });
+const DEMO_OCR_TOKEN = defineSecret('DEMO_OCR_TOKEN');
 // Kunci web publik (sama dengan firebase_options). Dipakai untuk accounts:sendOobCode (undangan).
 const WEB_API_KEY = defineString('WEB_API_KEY');
 
@@ -22,7 +25,7 @@ const RESEND_API_KEY = defineSecret('RESEND_API_KEY');
 const MAIL_FROM = defineString('MAIL_FROM');
 
 // Header yang dibutuhkan handler. Header lain (termasuk host) sengaja tidak diteruskan.
-const FORWARDED_HEADERS = ['origin', 'cookie', 'content-type', 'authorization', 'x-csrf-token', 'idempotency-key', 'traceparent'];
+const FORWARDED_HEADERS = ['origin', 'cookie', 'content-type', 'authorization', 'x-csrf-token', 'idempotency-key', 'traceparent', 'x-category', 'x-forwarded-for'];
 
 // Header hop-by-hop dan panjang body dibuat ulang oleh Express, jangan diteruskan dari upstream.
 const SKIP_RESPONSE_HEADERS = new Set(['set-cookie', 'transfer-encoding', 'connection', 'keep-alive', 'content-length', 'content-encoding']);
@@ -47,14 +50,17 @@ async function sendResponse(res, response) {
   res.send(Buffer.from(await response.arrayBuffer()));
 }
 
-export const bff = onRequest({ region: 'asia-southeast2', secrets: [COOKIE_KEY] }, async (req, res) => {
+// timeoutSeconds 120: KTP dengan pendamping vision bisa lebih dari 60 detik (demo).
+export const bff = onRequest({ region: 'asia-southeast2', secrets: [COOKIE_KEY, DEMO_OCR_TOKEN], timeoutSeconds: 120 }, async (req, res) => {
   const env = {
     APP_ORIGIN: APP_ORIGIN.value(),
     // Domain situs hosting utama. Action URL reset sandi memakai alamat ini (lihat auth-firebase.md bagian 8).
-    APP_ORIGIN_ALT: 'https://YOUR-APP-HOST.web.app',
+    APP_ORIGIN_ALT: 'https://ocr-wjv-b56b7.web.app',
     FIREBASE_PROJECT_ID: OCR_PROJECT_ID.value(),
     COOKIE_KEY: COOKIE_KEY.value(),
     API_BASE: API_BASE.value(),
+    DEMO_OCR_BASE: DEMO_OCR_BASE.value(),
+    DEMO_OCR_TOKEN: DEMO_OCR_TOKEN.value(),
   };
   await sendResponse(res, await handler.fetch(buildRequest(req), env));
 });

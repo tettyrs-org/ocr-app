@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../auth/demo_mode.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_widgets.dart';
 import 'documents_api.dart';
@@ -46,7 +47,6 @@ class _DocumentReviewPageState extends State<DocumentReviewPage> {
   String _docRef = '';
   String? _error;
   List<String> _violations = const [];
-
   @override
   void initState() {
     super.initState();
@@ -72,7 +72,7 @@ class _DocumentReviewPageState extends State<DocumentReviewPage> {
     _disposeControllers();
     _initialText.clear();
     for (final r in rows) {
-      final text = reviewInitialText(r.value);
+      final text = reviewInitialText(r.value, path: r.path);
       _initialText[r.path] = text;
       _controllers[r.path] = TextEditingController(text: text);
     }
@@ -188,7 +188,8 @@ class _DocumentReviewPageState extends State<DocumentReviewPage> {
         ),
       ),
       body: _buildBody(),
-      bottomNavigationBar: _rows.isEmpty
+      // Mode demo tidak menyimpan hasil, jadi bar simpan tidak ditampilkan.
+      bottomNavigationBar: (_rows.isEmpty || DemoMode.active)
           ? null
           : SafeArea(
               child: Padding(
@@ -196,8 +197,9 @@ class _DocumentReviewPageState extends State<DocumentReviewPage> {
                 child: SizedBox(
                   height: 48,
                   child: FilledButton(
-                    onPressed: _saving ? null : _save,
-                    child: Text(_saving ? 'Menyimpan...' : 'Simpan'),
+                    // Mode demo tidak menyimpan hasil, jadi tombol simpan dinonaktifkan.
+                    onPressed: (_saving || DemoMode.active) ? null : _save,
+                    child: Text(_saving ? 'Menyimpan...' : (DemoMode.active ? 'Mode demo: tidak disimpan' : 'Simpan')),
                   ),
                 ),
               ),

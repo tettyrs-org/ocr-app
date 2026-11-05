@@ -91,7 +91,9 @@ async function handleSession(request, env) {
   const roles = rolesFrom(payload);
   if (!requireAdmin(roles)) return errorResponse('FORBIDDEN', 'Hanya admin yang boleh masuk', 403, corsHeaders(request, env));
 
-  const session = newSession({ idToken: match[1], payload, roles });
+  const previous = await sessionFrom(request, env.COOKIE_KEY);
+  const iat = previous && previous.sub === payload.sub ? previous.iat : undefined;
+  const session = newSession({ idToken: match[1], payload, roles, iat });
   const headers = { ...corsHeaders(request, env), 'Set-Cookie': await sessionCookie(session, env.COOKIE_KEY) };
   return json({ data: { sub: session.sub, roles: session.roles, csrfToken: session.csrf } }, 200, headers);
 }
@@ -282,6 +284,9 @@ async function handleUpdateRoles(request, env, uid) {
     console.error('perubahan role dibatalkan:', err?.message);
     return errorResponse('INTERNAL_ERROR', 'Role tidak diubah karena penyimpanan gagal. Coba lagi.', 502, corsHeaders(request, env));
   }
+  // Cabut refresh token akun ini: sesi lama tidak bisa diperpanjang dengan peran lama. ID token yang sudah
+  // terbit tetap berlaku sampai habis masa berlakunya (sekitar 1 jam).
+  await auth.revokeRefreshTokens(uid).catch((err) => console.error('pencabutan token gagal:', err?.message));
 
   return json({ data: { uid, roles } }, 200, corsHeaders(request, env));
 }

@@ -15,7 +15,7 @@ const env = {
   APP_ORIGIN: process.env.APP_ORIGIN || 'http://localhost:5000',
   APP_ORIGIN_ALT: process.env.APP_ORIGIN_ALT || 'http://localhost:5000',
   ADMIN_APP_ORIGIN: process.env.ADMIN_APP_ORIGIN || 'http://localhost:5001',
-  FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID || 'YOUR_FIREBASE_PROJECT_ID',
+  FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID || 'ocr-wjv-b56b7',
   WEB_API_KEY: process.env.WEB_API_KEY || '',
   RESEND_API_KEY: process.env.RESEND_API_KEY || '',
   MAIL_FROM: process.env.MAIL_FROM || '',

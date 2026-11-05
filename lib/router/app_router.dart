@@ -73,7 +73,7 @@ GoRouter buildAppRouter({
           ),
           GoRoute(
             path: '/akun',
-            builder: (_, _) => AccountPage(profile: session.profile, onLogout: session.signOut),
+            builder: (_, _) => AccountPage(profile: session.profile, roles: session.roles, onLogout: session.signOut),
           ),
         ],
       ),

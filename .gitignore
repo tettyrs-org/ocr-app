@@ -44,19 +44,17 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Rahasia dan konfigurasi lokal. Jangan di-commit. Lihat .env.example dan functions/.env.example.
+# Rahasia dan konfigurasi lokal (sama dengan salinan publik).
 .env
 .env.*
-!.env.example
 functions/.env
-functions/.env.*
-!functions/.env.example
-.firebaserc
+
+# Generated and local-only (added when publishing ocr-app)
+build/
 .firebase/
-android/app/google-services.json
-ios/Runner/GoogleService-Info.plist
-*.jks
-key.properties
-*.iml
-local.properties
-.flutter-plugins-dependencies
+.wrangler/
+node_modules/
+Pods/
+android/.gradle/
+android/local.properties
+pages/.wrangler/

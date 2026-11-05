@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "966502044112",
+    "project_id": "ocr-wjv-b56b7",
+    "storage_bucket": "ocr-wjv-b56b7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:966502044112:android:3fcc218715aa73108e29d5",
+        "android_client_info": {
+          "package_name": "com.tettyrs.ocr_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrteD-iPAxD88NXyD_uOog_YLJTIO4oj4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

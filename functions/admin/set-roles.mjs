@@ -2,7 +2,7 @@
 // Kontrak: documents/tech/auth-firebase.md bagian 8. Dijalankan lewat set-roles.ps1 (Docker, jaringan API).
 //
 // Pemakaian:
-//   node admin/set-roles.mjs --email user@example.com --roles USER
+//   node admin/set-roles.mjs --email user@kantor.id --roles USER
 //
 // Perubahan role berlaku pada ID token berikutnya (paling lama 1 jam) atau saat pengguna login ulang.
 import { parseArgs } from 'node:util';

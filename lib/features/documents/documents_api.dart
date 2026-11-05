@@ -143,12 +143,14 @@ class DocumentsApi {
   }
 
   /// Unggah berkas. `idempotencyKey` disimpan oleh pemanggil sampai respons diterima (design.md 3.1).
+  /// `onTahap` hanya dipakai mode demo (kemajuan ekstraksi); unggahan biasa tidak memanggilnya.
   Future<UploadResult> upload({
     required List<int> bytes,
     required String filename,
     required String idempotencyKey,
     required String category,
     String? docTypeHint,
+    void Function(String tahap)? onTahap,
   }) async {
     final res = await _bff.apiUpload(
       '/v1/documents',

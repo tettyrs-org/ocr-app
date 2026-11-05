@@ -107,7 +107,8 @@ ThemeData buildAppTheme() {
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
-      titleTextStyle: textTheme.titleLarge,
+      // Judul besar dan tebal, seperti aplikasi modern (header di atas daftar).
+      titleTextStyle: textTheme.headlineSmall?.copyWith(fontSize: 26, letterSpacing: -0.6),
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: AppColors.surface,

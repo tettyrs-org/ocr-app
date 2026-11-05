@@ -16,15 +16,15 @@ Email pengguna yang akan dibuat.
 Daftar role dipisah koma: USER, ADMIN, atau VIEWER.
 
 .PARAMETER KeyPath
-Path kunci service account admin. Default: %USERPROFILE%\.firebase-keys\ocr-admin.json
+Path kunci service account admin. Default: C:\Users\1214\.firebase-keys\ocr-admin.json
 
 .EXAMPLE
-powershell -ExecutionPolicy Bypass -File create-user.ps1 -Email user@example.com -Roles USER
+powershell -ExecutionPolicy Bypass -File create-user.ps1 -Email user@kantor.id -Roles USER
 #>
 param(
     [Parameter(Mandatory = $true)][string]$Email,
     [Parameter(Mandatory = $true)][string]$Roles,
-    [string]$KeyPath = "%USERPROFILE%\.firebase-keys\ocr-admin.json"
+    [string]$KeyPath = "C:\Users\1214\.firebase-keys\ocr-admin.json"
 )
 
 $ErrorActionPreference = "Stop"
